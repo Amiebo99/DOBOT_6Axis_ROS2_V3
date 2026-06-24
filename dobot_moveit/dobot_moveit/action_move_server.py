@@ -3,16 +3,38 @@
 '''
 @author FTX
 @date 2025 / 03 / 03
+
+changes made in conjunction with claude opus 4.8
+
+Fixing ServoJ streaming
+- trajectory is replayed against its own time_from_start clock,
+    not firing in a tight loop and tripping moveits timeout
+- resampling: moveit's sparse unevelny timed points are interpolated into a fixed control period
+- servoJ 't' is matched to the stream cadence rather than a fixed 0.2s
+- multithreadedexecutor, reentrantcallback and a cancel handler
+
+tunig knobs are CONTROL_DT and SERVOJ_T
 '''
 
+import math
 import time
+
 import rclpy
-from rclpy.action import ActionServer
+from rclpy.action import ActionServer, CancelResponse
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
+from rclpy.callback_groups import ReentrantCallbackGroup
+
 from control_msgs.action import FollowJointTrajectory
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
-from dobot_msgs_v3.srv import *   # 自定义的服务接口
+from dobot_msgs_v3.srv import *  # noqa: F401,F403  (EnableRobot, ServoJ, ...)
 import os
+
+# tuning
+CONTROL_DT = 0.05
+SERVOJ_DT = 0.10
+
+RAD2DEG = 180.0 / math.pi
 
 class FollowJointTrajectoryServer(Node):
 
