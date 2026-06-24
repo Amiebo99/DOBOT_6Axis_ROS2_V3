@@ -403,8 +403,8 @@ class DobotApiMove(DobotApi):
         return self.sendRecvMsg(string)
     
     def ServoJ(self, j1, j2, j3, j4,j5,j6,t,*dynParams):
-        string = "ServoJ({:f},{:f},{:f},{:f},{:f},{:f},t={:f}".format(
-            j1,j2,j3,j4,j5,j6,t)
+        string = "ServoJ({:f},{:f},{:f},{:f},{:f},{:f}".format(
+            j1,j2,j3,j4,j5,j6)
         for params in dynParams[0]:
              string =string+ ","+ str(params)
         string =string+ ")" 
