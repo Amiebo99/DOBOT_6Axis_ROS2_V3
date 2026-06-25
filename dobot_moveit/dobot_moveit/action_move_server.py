@@ -115,19 +115,19 @@ class FollowJointTrajectoryServer(Node):
         t0 = time.monotonic()
         seg = 0
         tk = 0.0
+        times = [_tsec(p) for p in pts]
         while tk <= total:
             if goal_handle.is_cancel_requested:
                 return False
             
             # advance to the segment [pts[seg], pts[seg+1]] containing tk
-            while seg < len(pts) -1 and _tsec(pts[seg + 1]) < tk:
+            while seg < len(pts) -1 and times[seg + 1] < tk:
                 seg +=1
-            p0 = pts[seg]
-            p1 = pts[min(seg + 1, len(pts) - 1)]
-            t_p0, t_p1 = _tsec(p0), _tsec(p1)
+            t_p0 = times[seg]
+            t_p1 = times[seg +1] if seg + 1 < len(pts) else times[seg]
             span = t_p1 - t_p0
             alpha = 0.0 if span <= 0.0 else (tk - t_p0) / span
-            alpha = max(0.0, min(1.0, alpha))
+            alpha = 0.0 if alpha < 0.0 else 1.0 if alpha > 1.0 else alpha
 
             # Linear interpolation of each joint: rad -> deg
             joints_deg = [
